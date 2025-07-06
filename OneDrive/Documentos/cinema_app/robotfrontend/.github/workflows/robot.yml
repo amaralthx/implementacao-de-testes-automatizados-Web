@@ -1,0 +1,38 @@
+name: Robot Framework Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+
+jobs:
+  robot:
+    runs-on: ubuntu-latest
+
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      COLLECTION_NAME: ${{ secrets.COLLECTION_NAME }}
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run Robot Tests
+      run: |
+        robot -d logs --loglevel TRACE resources/tests/signup.robot
+
+    - name: Upload Logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: robot-logs
+        path: logs/
